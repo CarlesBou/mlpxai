@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Apr  4 19:13:33 2024
 
-@author: Carles
+"""
+Jose L. Carles - Enrique Carmona - UNED - 2024-2025
 """
 
 import numpy as np
@@ -11,47 +10,74 @@ import tensorflow as tf
 
 from tensorflow.keras.layers import Dense, Dropout
 from keras.engine.input_layer import InputLayer
+from keras.utils.generic_utils import get_custom_objects
+from tensorflow.keras import backend as K
 
 import pandas as pd
 
+'''
+Definition of class explainer FACE
+'''
+class FACEExplainer:
+    '''
+    The initalization needs only to store the model
+    '''
+    def __init__(self, model):
+        self.model = model
+        
+        '''
+        We add the hard versions of sigmoid and tanh to the list
+        of Keras custom objects
+        '''
+        get_custom_objects().update({'hard_sigmoid': hard_sigmoid})
+        get_custom_objects().update({'hard_tanh': hard_tanh})
 
-def get_face_contrib(x_sample, model, return_weighted=True):
-    if isinstance(x_sample, (pd.core.series.Series)):
-        x_sample = x_sample.to_numpy()
+    '''
+    Perform the actual computation of attributions for a sample
+    '''
+    def explain(self, x_sample, return_weighted=True):
         
-    _, I_list, H_list, O_list = run_layers(x_sample, model, return_PI_list=True)
+        if isinstance(x_sample, (pd.core.series.Series)):
+            x_sample = x_sample.to_numpy()
+            
+        '''
+        Compute the Activation Matrix list (I_list)
+        '''
+        _, I_list, H_list, O_list = run_layers(x_sample, self.model, return_PI_list=True)
+            
+        contrib = None
+        I_index = 0
         
-    contrib = None
-    I_index = 0
+        for layer in self.model.layers:
+            if isinstance(layer, (InputLayer, Dropout)):
+                continue
+            
+            w = layer.get_weights()[0]
     
-    for layer in model.layers:
-        if isinstance(layer, (InputLayer, Dropout)):
-            continue
-        
-        w = layer.get_weights()[0]
-
-        if len(layer.get_weights()) > 1:
-            bias = layer.get_weights()[1]
-        else:
-            bias = None
-
-        w_T_ext = get_transposed_ext(w, bias)
-
-        if I_index == 0:
-            contrib = I_list[I_index] @ w_T_ext 
-        else:
-            contrib =  I_list[I_index] @ w_T_ext @ contrib
-
-        I_index += 1 
-        
-    if return_weighted:  
-        contrib[:, 1:] = contrib[:, 1:] * x_sample
-
-    return contrib[1:] 
+            if len(layer.get_weights()) > 1:
+                bias = layer.get_weights()[1]
+            else:
+                bias = None
+    
+            w_T_ext = get_transposed_ext(w, bias)
+    
+            if I_index == 0:
+                contrib = I_list[I_index] @ w_T_ext 
+            else:
+                contrib =  I_list[I_index] @ w_T_ext @ contrib
+    
+            I_index += 1 
+            
+        if return_weighted:  
+            contrib[:, 1:] = contrib[:, 1:] * x_sample
+    
+        return contrib[1:] 
 
 
 
-
+'''
+Get information about the Keras model layer type 
+'''
 def get_layer_type(layer):
   if isinstance(layer, InputLayer):
     return 'InputLayer', '', None
@@ -80,48 +106,10 @@ def get_layer_type(layer):
     return 'Unkown', 'Unknown', None
  
   
-def print_model_structure(model):    
-  print('\nMLP structure')
-  for layer in model.layers:
-    layer_type, activation_name, activation_params = get_layer_type(layer)
-    match layer_type:
-      case 'InputLayer':
-        print(f'  Layer {layer.name}, InputLayer, Shape {layer.input_shape}')
-        continue
-      case 'Dropout':
-        print(f'  Layer Dropout, rate={layer.rate}')
-        continue
-      case 'Dense':
-        match activation_name:
-          case 'LeakyReLU': 
-            name = f'Leaky_ReLU, alpha={activation_params["negative_slope"]:.3f}'
-          case 'ReLU':
-            name = 'ReLU'
-          case 'linear':
-            name = 'linear'
-          case 'hard_sigmoid':
-            name = 'hard_sigmoid'
-          case 'hard_tanh':
-            name = 'hard_tanh'
-          case _:
-            name = activation_name
-            raise ValueError(f'No sé qué es esta función de activación en layer {layer.name}')
-      case _:
-        raise ValueError(f'No sé qué es este layer {layer}')
-  
-    if len(layer.get_weights()) > 1: 
-      print(f'  Layer {layer.name}, Weights {layer.get_weights()[0].shape}) - Bias {layer.get_weights()[1].shape}, Activation {name}')
-    else:
-      print(f'  Layer {layer.name}, Weights {layer.get_weights()[0].shape}) - No bias, Activation {name}')
-
-  print()  
-
 
 '''
-Obtenemos la matriz pseudoidentidad para una ReLU para una entrada
-de la capa (que tiene unos pesos y bias asodicados)
+Get the activation matrix for a linear activation layer
 '''
-
 def get_I_linear(x, w, bias=None):
 
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
@@ -133,7 +121,9 @@ def get_I_linear(x, w, bias=None):
 
 
 
-
+'''
+Get the activation matrix for a ReLU activation layer
+'''
 def get_I_relu(x, w, bias=None, alpha=0.3):
 
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
@@ -158,7 +148,7 @@ def get_I_relu(x, w, bias=None, alpha=0.3):
         
 
 '''
-Hard_sigmoid
+Hard_sigmoid definition (forward pass)
     np.maximum(0, np.minimum(1, x))
 '''
 def get_I_hard_sigmoid(x, w, bias=None):
@@ -182,14 +172,8 @@ def get_I_hard_sigmoid(x, w, bias=None):
 
 
 '''
-Hard_sigmoid
-    np.maximum(0, np.minimum(1, x))
+Hard_sigmoid definition (backward pass)
 '''
-def hard_sigmoid_old(x):
-    zeros = tf.zeros_like(x)
-    ones = tf.ones_like(x)
-    return tf.math.maximum(zeros, tf.math.minimum(ones, x))
-
 @tf.custom_gradient
 def hard_sigmoid(x):
    def grad(dy):
@@ -199,7 +183,7 @@ def hard_sigmoid(x):
 
 
 '''
-Hard_tanh
+Hard_tanh definition (forward pass)
      np.maximum(-1, np.minimum(1, x))
 '''
 def get_I_hard_tanh(x, w, bias=None):
@@ -228,16 +212,8 @@ def get_I_hard_tanh(x, w, bias=None):
 
 
 '''
-Hard_tanh
-    np.maximum(-1, np.minimum(1, x))
+Hard_sigmoid definition (backward pass)
 '''
-def hard_tanh_old(x):
-  ones = tf.ones_like(x)
-  return tf.math.maximum(-ones, tf.math.minimum(ones, x))
-
-from tensorflow.keras import backend as K
-
-
 @tf.custom_gradient
 def hard_tanh(x):
     def grad(dy):
@@ -248,8 +224,8 @@ def hard_tanh(x):
 
 
 '''
-Obtenemos la matriz pseudoidentidad para una función linean para una entrada
-de la capa (que tiene unos pesos y bias asodicados, puede que bias=0)
+Get the activation matrix for an input (x) with a specific activation
+function
 '''
 def get_I_activation(activation, x, w=None, bias=None):
 
@@ -277,7 +253,7 @@ def get_I_activation(activation, x, w=None, bias=None):
   
 
 '''
-Obtemos la matriz ampliada con el bias incorporado
+Get an extended (adding a top row [1,0,...,0]) matrix adding weights and bias
 '''
 def get_transposed_ext(w, bias=None):
     if not isinstance(bias, np.ndarray):
@@ -292,17 +268,15 @@ def get_transposed_ext(w, bias=None):
   
 
 '''
-Obtenemos el vector de entrada ampliado
+Get an extended vector from x
 '''
 def get_extended_x(x):
   return np.append([1], x).reshape(-1,1)
 
+
 '''
-Ejecución de activación (lineal o ReLU) de una capa
-  Transponemos y ampliamos la matriz de pesos incorporando el (posible) bias
-  Ampliamos y transponemos el vector de entrada 
-  Generamos la matriz de pseudoidentidad (dependiente de la función de activación)
-  Operamos la capa
+Run a layer using their activation funcions, an input x, and the
+weights and bias
 '''
 def execute_layer(activation, x, w, bias=None):
     w_T_ext = get_transposed_ext(w, bias)
@@ -316,7 +290,9 @@ def execute_layer(activation, x, w, bias=None):
 
 
 
-        
+'''
+Traverse the network to compute the activation matrix list (I_list)
+'''      
 def run_layers(layer_input, model, return_PI_list=False, return_outputs=False):
 
     pseudo_I_list = []
@@ -352,3 +328,42 @@ def run_layers(layer_input, model, return_PI_list=False, return_outputs=False):
         else:
           return layer_output
 
+
+'''
+Auxiliary method to help studying Keras models
+'''
+def print_model_structure(model):    
+  print('\nMLP structure')
+  for layer in model.layers:
+    layer_type, activation_name, activation_params = get_layer_type(layer)
+    match layer_type:
+      case 'InputLayer':
+        print(f'  Layer {layer.name}, InputLayer, Shape {layer.input_shape}')
+        continue
+      case 'Dropout':
+        print(f'  Layer Dropout, rate={layer.rate}')
+        continue
+      case 'Dense':
+        match activation_name:
+          case 'LeakyReLU': 
+            name = f'Leaky_ReLU, alpha={activation_params["negative_slope"]:.3f}'
+          case 'ReLU':
+            name = 'ReLU'
+          case 'linear':
+            name = 'linear'
+          case 'hard_sigmoid':
+            name = 'hard_sigmoid'
+          case 'hard_tanh':
+            name = 'hard_tanh'
+          case _:
+            name = activation_name
+            raise ValueError(f'No sé qué es esta función de activación en layer {layer.name}')
+      case _:
+        raise ValueError(f'No sé qué es este layer {layer}')
+  
+    if len(layer.get_weights()) > 1: 
+      print(f'  Layer {layer.name}, Weights {layer.get_weights()[0].shape}) - Bias {layer.get_weights()[1].shape}, Activation {name}')
+    else:
+      print(f'  Layer {layer.name}, Weights {layer.get_weights()[0].shape}) - No bias, Activation {name}')
+
+  print()  

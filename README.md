@@ -22,6 +22,14 @@ The */source/examples* folder contains Python programs that show how to use FACE
 And, in the */source/examples/notebooks* folder, you can find the same Python programs but in Jupyter Notebook format.
 
 
+## Instalation
+
+Today, the better option to get the FACE code and start using it is to clone this Github. Simply clone the project with:
+
+```sh
+git clone https://github.com/CarlesBou/mlpxai.git
+```
+
 
 ## 
 

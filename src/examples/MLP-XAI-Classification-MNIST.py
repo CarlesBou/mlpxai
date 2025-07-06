@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 23 05:28:18 2024
 
-@author: Carles
 """
+Jose L. Carles - Enrique Carmona - UNED - 2024-2025
+"""
+
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.getcwd())))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from mlpxai.explainers.face.kerasmlp import get_face_contrib
-# from mlpxai.explainers.face.kerasmlp import hard_sigmoid, hard_tanh
+from mlpxai.explainers.face.kerasface import FACEExplainer
 
 from mlpxai.utils.visualize import plot_MNIST_digit
 
 import keras
-from keras.utils.generic_utils import get_custom_objects
 from keras.datasets import mnist
 from keras.models import Model
 
@@ -144,16 +142,24 @@ print(f'Test data accuracy = {accuracy:.5f}\n')
 ''''
 MNIST samples 
 '''
-
 samples = [8535, 8330, 8841]
+
+
+'''
+Create the FACE Explainer
+'''
+face = FACEExplainer(model)
 
 
 for sample in samples:
 
     print(f'Computing FACE attributions for test sample {sample} ground/net/FACE={y_test[sample]}/{y_mlp[sample]}/', end='')
     
-    FACE_contrib = get_face_contrib(X_test[sample], model)
-    
+    '''
+    And perform the explanation to get the feature attributions
+    '''
+    FACE_contrib = face.explain(X_test[sample])
+        
     y_FACE = np.argmax(np.sum(FACE_contrib, axis=1))
     
     print(f'{y_FACE} ... OK')

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 23 05:28:18 2024
 
-@author: Carles
+"""
+Jose L. Carles - Enrique Carmona - UNED - 2024-2025
 """
 
 import os
@@ -11,14 +10,14 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.getcwd())))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from mlpxai.explainers.face.kerasmlp import get_face_contrib
-# from mlpxai.explainers.face.kerasmlp import hard_sigmoid, hard_tanh
+
+from mlpxai.explainers.face.kerasface import FACEExplainer
 
 from mlpxai.utils.visualize import plot_bar_contrib
 
 import keras
 from keras.models import Model
-# from keras.utils.generic_utils import get_custom_objects
+
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -35,7 +34,6 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 
-
 '''
 CLASSIFICATION
 '''
@@ -48,13 +46,6 @@ Programa de pruebas de ejecución de la red
 # random.seed = 1
 # tf.random.set_seed(1)
 keras.utils.set_random_seed(1)
-
-
-# '''
-# Incorporamos las funciones hard_sigmoid y hard_tanh
-# '''
-# get_custom_objects().update({'hard_sigmoid': hard_sigmoid})
-# get_custom_objects().update({'hard_tanh': hard_tanh})
 
 
 ds_name = 'liver'
@@ -154,7 +145,7 @@ print('OK')
 
 
 '''
-Realizamos predicciones y evaluamos el resultado
+Generating predictions
 '''
 print('Generating predictions for test data ... ', end='')
 
@@ -176,6 +167,11 @@ Liver samples
 samples = [43]
 
 
+'''
+Create the FACE Explainer
+'''
+face = FACEExplainer(model)
+
 for sample in samples:
     
     '''
@@ -184,7 +180,10 @@ for sample in samples:
     
     print(f'Plotting FACE feature attributions for test sample {sample} ground/net={y_test[sample]}/{y_mlp[sample]} ... ', end='')
     
-    face_contrib = get_face_contrib(X_test[sample], model)
+    '''
+    And perform the explanation to get the feature attributions
+    '''
+    face_contrib = face.explain(X_test[sample])
     
     y_face = np.argmax(np.sum(face_contrib, axis=1))
         

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 23 05:28:18 2024
 
-@author: Carles
+"""
+Jose L. Carles - Enrique Carmona - UNED - 2024-2025
 """
 
 from matplotlib import pyplot as plt

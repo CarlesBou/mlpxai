@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 
+"""
+Jose L. Carles - Enrique Carmona - UNED - 2024-2025
+"""
+
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.getcwd())))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from mlpxai.explainers.face.kerasmlp import get_face_contrib
+from mlpxai.explainers.face.kerasface import FACEExplainer
 
 from mlpxai.utils.visualize import plot_bar_contrib, get_str_val
 
@@ -139,8 +143,10 @@ print(f'MLP results for test data RMSE = {rmse:.5f}')
 
 
 '''
-REGRESSION: FACE Feature Relevance computation 
+Create the FACE Explainer
 '''
+face = FACEExplainer(model)
+
 
 # Selected sample for Delta
 samples = [499]
@@ -154,7 +160,11 @@ for sample in samples:
     
     print(f'\nPlotting FACE regression feature relevance for sample {sample} ... ', end='')
     
-    face_contrib, = get_face_contrib(X_test[sample], model)
+    '''
+    And perform the explanation to get the feature attributions
+    '''
+    face_contrib, = face.explain(X_test[sample])
+    
     
     y_face = np.sum(face_contrib)
     
