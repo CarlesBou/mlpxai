@@ -141,7 +141,6 @@ model.compile(optimizer='nadam',
 Empezamos el análisis
 '''
 
-
 print('\nCLASSIFICATION OF INDIVIDUALS\n')
 print(f'Using dataset: {dataset_name}, {len(y)} samples ({len(y_train)} train / {len(y_test)} test), {num_inputs} features, {num_outputs} classes')
 
