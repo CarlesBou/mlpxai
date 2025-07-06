@@ -9,17 +9,17 @@ The rapid advancements in machine learning have led to the deployment of complex
 
 ## Repository description
 The repository contains the source files developed to implement the new local post-hoc explainer for Feed-forward Neural 
-Networks (FNNs) named "**Feature Attribution Computed Exactly (FACE)**" and the code for the different examples of using
-the explainer over regression and classification tabular problems and in classifation with images.
+Networks (FNNs) named "**Feature Attribution Computed Exactly (FACE)**" and the code of different examples showing the 
+use of the explainer over regression and classification tabular problems and in classifation with images.
 
-It has been implemented in Python and uses Keras and Tensorflow framework (we are working in a new version compatible
-with PyTorch).
+It has been implemented in Python and uses Keras and Tensorflow framework. Wwe are working in a new version compatible
+with PyTorch, too.
 
 The */source/mlpxai/explainers/face* folder keeps the source files of the new explainer.
 
-The *experiments* contains the diverse experiments made.
+The */source/examples* contains Python programs that show how to use FACE.
 
-The *experiments/datasets* folder contains the datasets employed for classification and regressions tasks used in the experiments.
+in the */source/examples/notebooks* you can find the same Python programs but in Jupyter Notebook format.
 
 
 
@@ -27,5 +27,4 @@ The *experiments/datasets* folder contains the datasets employed for classificat
 
 
 ## Licenses
-This work is dual-licensed under Creative Commons Zero v1.0 Universal (or any later version) license for our contribution and 
-correspondig licenses coming from LIME, SHAP, and FCP authors.
+This work is licensed under Creative Commons Zero v1.0 Universal (or any later version) license.
