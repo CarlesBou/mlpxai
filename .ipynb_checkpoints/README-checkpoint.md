@@ -1,5 +1,5 @@
 # Achieving faithful explainability in feedforward neural networks through accurately computed feature attribution
-This repository contains the supplementary material for the paper (currently under review):
+This repository contains supplementary material for the paper (currently under review):
 
 Carles-Bou, Jose L. and Carmona, Enrique J. **Achieving faithful explainability in feedforward neural networks through accurately computed feature attribution**. 
 
