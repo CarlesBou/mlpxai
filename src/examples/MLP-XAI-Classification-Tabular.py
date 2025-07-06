@@ -38,10 +38,6 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 CLASSIFICATION
 '''
 
-
-'''
-Programa de pruebas de ejecución de la red
-'''
 # np.seed = 1
 # random.seed = 1
 # tf.random.set_seed(1)
@@ -52,57 +48,56 @@ ds_name = 'liver'
 liver_drinks = 7
 
 
-if ds_name == 'liver':
-    '''
-    Liver disorder - Classification
-    
-      Attribute information:
-       1. mcv	mean corpuscular volume
-       2. alkphos	alkaline phosphotase
-       3. sgpt	alamine aminotransferase
-       4. sgot 	aspartate aminotransferase
-       5. gammagt	gamma-glutamyl transpeptidase
-       6. drinks	number of half-pint equivalents of alcoholic beverages
-                    drunk per day --> Target. Dichotimeze with
-                    Class 0 as drinks < 7, Class 1 with drinks >= 7
-       7. selector  field used to split data into two sets --> Ignored
-    
-    '''
-    
-    liver_df = pd.read_csv('sample_data/liver.csv', delimiter=';')
-    
-    X = liver_df.iloc[:, :-2]
-    y = pd.DataFrame(liver_df['drinks'])
-    
-    # Dichotomize target, number of drinks per day, in two classes
-    y.loc[y['drinks'] < liver_drinks] = 0
-    y.loc[y['drinks'] >= liver_drinks] = 1
-    
-    y = y.values.ravel().astype(int)
-    
-    feature_names = X.columns
-    
-    num_inputs = X.shape[1]
-    num_outputs = 2
-    
-    dataset_name = 'Liver disorder'
-    
-    input_layer = Input(shape=(num_inputs,))
-    hidden_layer = Dense(30, activation='relu')(input_layer)
-    hidden_layer = Dense(5, activation='relu')(hidden_layer)    
-    output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
-    
-    test_size = 0.15
-    validation_split = 0.10
-    epochs = 70
-    
-    use_saved_model_weights = False
+'''
+Liver disorder dataset - Classification
+
+  Attribute information:
+   1. mcv	mean corpuscular volume
+   2. alkphos	alkaline phosphotase
+   3. sgpt	alamine aminotransferase
+   4. sgot 	aspartate aminotransferase
+   5. gammagt	gamma-glutamyl transpeptidase
+   6. drinks	number of half-pint equivalents of alcoholic beverages
+                drunk per day --> Target. Dichotimeze with
+                Class 0 as drinks < 7, Class 1 with drinks >= 7
+   7. selector  field used to split data into two sets --> Ignored
+
+'''
+
+liver_df = pd.read_csv('sample_data/liver.csv', delimiter=';')
+
+X = liver_df.iloc[:, :-2]
+y = pd.DataFrame(liver_df['drinks'])
+
+# Dichotomize target, number of drinks per day, in two classes
+y.loc[y['drinks'] < liver_drinks] = 0
+y.loc[y['drinks'] >= liver_drinks] = 1
+
+y = y.values.ravel().astype(int)
+
+feature_names = X.columns
+
+num_inputs = X.shape[1]
+num_outputs = 2
+
+dataset_name = 'Liver disorder'
+
+input_layer = Input(shape=(num_inputs,))
+hidden_layer = Dense(30, activation='relu')(input_layer)
+hidden_layer = Dense(5, activation='relu')(hidden_layer)    
+output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
+
+test_size = 0.15
+validation_split = 0.10
+epochs = 70
+
+use_saved_model_weights = False
 
 
 
 '''
-Escalamos los datos de entrada con un escalado MinMax y mantenemos el 
-escalador para poder utilizar la reversión (scaler.inverse_transform(X))
+Rescale the input data to [0, 1] with a MinMaxScaler. Later we will
+use the scaler to transform back the data to the original domain
 '''
 scaler = MinMaxScaler()
 
@@ -119,7 +114,7 @@ y_train_categorical = to_categorical(y_train, num_outputs).astype(np.float32)
 
 
 ''' 
-Creamos y entrenamos el modelo con la definición específica para cada dataset
+Create and compile the model
 '''
 model = Model(inputs=input_layer, outputs=output_layer)
 
@@ -128,14 +123,12 @@ model.compile(optimizer='nadam',
               loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True))
 
 
-'''
-Empezamos el análisis
-'''
-
-print('\nCLASSIFICATION OF INDIVIDUALS\n')
 print(f'Using dataset: {dataset_name}, {len(y)} samples ({len(y_train)} train / {len(y_test)} test), {num_inputs} features, {num_outputs} classes')
 
-    
+
+'''
+Train the model
+'''    
 print('Training classification model ... ', end='')
 
 my_fit = model.fit(X_train, y_train_categorical,

@@ -31,12 +31,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 '''
-CLASSIFICATION
-'''
-
-
-'''
-Programa de pruebas de ejecución de la red
+CLASSIFICATION WITH IMAGES - MNIST
 '''
 seed = 1
 # np.seed = 1
@@ -44,66 +39,54 @@ seed = 1
 # tf.random.set_seed(1)
 keras.utils.set_random_seed(seed)
 
-
-# '''
-# Incorporamos las funciones hard_sigmoid y hard_tanh
-# '''
-# get_custom_objects().update({'hard_sigmoid': hard_sigmoid})
-# get_custom_objects().update({'hard_tanh': hard_tanh})
-
     
 ds_name = 'MNIST'
 
 
-if ds_name == 'MNIST':
-    (X_train, y_train), (X_test, y_test) = mnist.load_data()
-    
-    num_inputs = 28 * 28
-    num_outputs = 10
-    
-    dataset_name = 'MNIST'
-    
-    input_layer = Input(shape=(num_inputs,))
-    hidden_layer = Dense(num_inputs * 2, activation='relu')(input_layer)
-    hidden_layer = Dense(5, activation='relu')(hidden_layer)
-    output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
-    
-    model_version = 0
-    
-    validation_split = 0.1 
-    epochs = 10
-    
-    use_saved_model_weights = True
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
 
+num_inputs = 28 * 28
+num_outputs = 10
+
+dataset_name = 'MNIST'
+
+input_layer = Input(shape=(num_inputs,))
+hidden_layer = Dense(num_inputs * 2, activation='relu')(input_layer)
+hidden_layer = Dense(5, activation='relu')(hidden_layer)
+output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
+
+model_version = 0
+
+validation_split = 0.1 
+epochs = 10
+
+use_saved_model_weights = True
 
     
-X_train = X_train.astype(np.float32) / 255. #Transform integer pixel values to [0,1]
+X_train = X_train.astype(np.float32) / 255.   #Transform integer pixel values to [0,1]
 X_train = X_train.reshape(-1, num_inputs)     #Transfor image matrix into vector
-X_test = X_test.astype(np.float32) / 255.   #Transform integer pixel values to [0,1]
+X_test = X_test.astype(np.float32) / 255.     #Transform integer pixel values to [0,1]
 X_test = X_test.reshape(-1, num_inputs)       #Transfor image matrix into vector
     
 y_train_categorical = to_categorical(y_train, num_outputs).astype(np.float32)
     
 
 ''' 
-Creamos y entrenamos el modelo con la definición específica para cada dataset
+Create and compile the model
 '''
 model = Model(inputs=input_layer, outputs=output_layer)
-# model = MyModel(inputs=input_layer, outputs=output_layer)
 
 model.compile(optimizer='nadam',
               metrics=['accuracy'],
               loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True))
 
 
-'''
-Empezamos el análisis
-'''
-
-
-print('\nMNIST OBSERVATION\n')
 print(f'Using dataset: {dataset_name}, {len(y_train) + len(y_test)} samples ({len(y_train)} train / {len(y_test)} test), {num_inputs} features, {num_outputs} classes')
 
+'''
+As the MNIST dataset is quite big, try to load a 
+pretrained model. If it doesn't exist, train and save a new one
+'''
 weights_file_name = f'{dataset_name}_classfication_seed_{seed}_epochs_{epochs}.weights.h5'
 
 if use_saved_model_weights:
@@ -126,7 +109,7 @@ else:
 
 
 '''
-Realizamos predicciones y evaluamos el resultado
+Run predictions over the test dataset and show the network performance
 '''
 print('Generating predictions for test data ... ', end='')
 predictions = model.predict(X_test, verbose=0)

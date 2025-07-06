@@ -31,10 +31,9 @@ import keras
 from keras.models import Model
 
 
-  
 
 '''
-Programa de pruebas de ejecución de la red
+REGRESSION
 '''
 
 seed = 1
@@ -44,45 +43,38 @@ seed = 1
 keras.utils.set_random_seed(seed)
        
 
-'''
-REGRESSION
-'''
-
 ds_name = 'delta'
 
-n_args = len(sys.argv) 
-    
 
-if ds_name == 'delta':
-    delevators_df = pd.read_csv('sample_data/delta_elevators.csv', delimiter=';')
-    
-    X = delevators_df.iloc[:, :-1]
-    y = delevators_df.iloc[:, -1].to_numpy()
-    
-    feature_names = X.columns
-    num_inputs =  X.shape[1]
-    num_outputs = 1
-    
-    dataset_name = 'Delta Elevators'
-    
-    input_layer = Input(shape=(num_inputs,))
-    hidden_layer = Dense(30, activation='relu')(input_layer)
-    hidden_layer = Dense(20, activation='relu')(hidden_layer)
-    hidden_layer = Dense(5, activation='relu')(hidden_layer)
-    output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
+delevators_df = pd.read_csv('sample_data/delta_elevators.csv', delimiter=';')
 
-    test_size = 0.20
-    validation_split = 0.1 
-    epochs = 60
+X = delevators_df.iloc[:, :-1]
+y = delevators_df.iloc[:, -1].to_numpy()
 
-    
-    use_saved_model_weights = True
+feature_names = X.columns
+num_inputs =  X.shape[1]
+num_outputs = 1
+
+dataset_name = 'Delta Elevators'
+
+input_layer = Input(shape=(num_inputs,))
+hidden_layer = Dense(30, activation='relu')(input_layer)
+hidden_layer = Dense(20, activation='relu')(hidden_layer)
+hidden_layer = Dense(5, activation='relu')(hidden_layer)
+output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
+
+test_size = 0.20
+validation_split = 0.1 
+epochs = 60
+
+
+use_saved_model_weights = True
 
 
 '''
-Escalamos el dataset de entrenamiento
+Rescale the input data to [0, 1] with a MinMaxScaler. Later we will
+use the scaler to transform back the data to the original domain
 '''
-
 scaler = MinMaxScaler()
 
 X = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
@@ -96,8 +88,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
 X_test = X_test.to_numpy()
 
 
-'''
-Creamos la red con el MLP definido
+''' 
+Create and compile the model
 '''
 model = Model(inputs=input_layer, outputs=output_layer)
 
@@ -105,6 +97,11 @@ model.compile(optimizer='nadam',
                   loss='mean_squared_error')
 
 
+
+'''
+As the Delta Elevators dataset is quite big, try to load a 
+pretrained model. If it doesn't exist, train and save a new one
+'''
 
 weights_file_name = f'{ds_name}_regression_seed_{seed}_epochs_{epochs}.weights.h5'
 
@@ -133,6 +130,9 @@ else:
 
 
 
+'''
+Run predictions over the test dataset and show the network performance
+'''
 print('\nGenerating predictions over test data with MLP ... ', end='')
 mlp_predictions = model.predict(X_test, verbose=0)
 print('OK')
