@@ -12,7 +12,7 @@ The repository contains the source files developed to implement the new local po
 Networks (FNNs) named "**Feature Attribution Computed Exactly (FACE)**" and the code of different examples showing the 
 use of the explainer over regression and classification tabular problems and in classifation with images.
 
-It has been implemented in Python and uses Keras and Tensorflow framework. We are working in a new version compatible
+It has been implemented in Python and uses the Keras and Tensorflow framework. We are working in a new version compatible
 with PyTorch, too.
 
 The */source/mlpxai/explainers/face* folder keeps the source files of the new explainer.
@@ -30,8 +30,6 @@ Today, the better option to get the FACE code and start using it is to clone thi
 git clone https://github.com/CarlesBou/mlpxai.git
 ```
 
-
-## 
 
 
 ## Licenses
