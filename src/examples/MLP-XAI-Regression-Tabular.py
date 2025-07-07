@@ -149,7 +149,7 @@ face = FACEExplainer(model)
 
 
 # Selected sample for Delta
-samples = [499]
+samples = [499, 22, 11, 32, 44, 111]
 
 
 for sample in samples:

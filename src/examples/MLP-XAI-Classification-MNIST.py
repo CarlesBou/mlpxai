@@ -125,7 +125,7 @@ print(f'Test data accuracy = {accuracy:.5f}\n')
 ''''
 MNIST samples 
 '''
-samples = [8535, 8330, 8841]
+samples = [8535, 8330, 8841, 23, 57, 8003]
 
 
 '''

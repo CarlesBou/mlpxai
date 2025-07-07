@@ -32,7 +32,7 @@ import numpy as np
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
+# tf.keras.mixed_precision.set_global_policy('float64')
 
 '''
 CLASSIFICATION
@@ -87,6 +87,11 @@ hidden_layer = Dense(30, activation='relu')(input_layer)
 hidden_layer = Dense(5, activation='relu')(hidden_layer)    
 output_layer = Dense(num_outputs, activation='linear')(hidden_layer)
 
+# input_layer = Input(shape=(num_inputs,), dtype='float64')
+# hidden_layer = Dense(30, activation='relu', dtype='float64')(input_layer)
+# hidden_layer = Dense(5, activation='relu', dtype='float64')(hidden_layer)    
+# output_layer = Dense(num_outputs, activation='linear', dtype='float64')(hidden_layer)
+
 test_size = 0.15
 validation_split = 0.10
 epochs = 70
@@ -108,10 +113,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                     shuffle=True,
                                                     stratify=y)
 
-X_test = X_test.to_numpy()
-
 y_train_categorical = to_categorical(y_train, num_outputs).astype(np.float32)
 
+
+X_test = X_test.to_numpy()
 
 ''' 
 Create and compile the model
@@ -157,7 +162,7 @@ print(f'Test data accuracy = {accuracy:.5f}\n')
 '''
 Liver samples
 '''
-samples = [43]
+samples = [43, 22, 11, 33, 1, 16]
 
 
 '''
