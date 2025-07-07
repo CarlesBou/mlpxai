@@ -15,7 +15,7 @@ use of the explainer over regression and classification tabular problems and in 
 It has been implemented in Python and uses the Keras and Tensorflow framework. We are working in a new version compatible
 with PyTorch, too.
 
-The */source/mlpxai/explainers/face* folder keeps the source files of the new explainer.
+The [*/source/mlpxai/explainers/face*](src/mlpxai/explainers/face) folder keeps the source files of the new explainer.
 
 The */source/examples* folder contains Python programs that show how to use FACE.
 
