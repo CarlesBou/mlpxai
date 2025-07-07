@@ -20,8 +20,9 @@ The [*/source/mlpxai/explainers/face*](src/mlpxai/explainers/face) folder keeps 
 The [*/source/examples*](src/examples) folder contains Python programs that show how to use FACE.
 
 And, in the [*/source/examples/notebooks*](src/examples/notebooks) folder, you can find the same Python programs but in Jupyter Notebook format:
-- Tabular classification example ([notebook](https://github.com/CarlesBou/mlpxai/blob/main/src/examples/notebooks/TabularClassification.ipynb)
-- Hola
+- Tabular classification example ([notebook](https://github.com/CarlesBou/mlpxai/blob/main/src/examples/notebooks/TabularClassification.ipynb))
+- Tabular regression example ([notebook](https://github.com/CarlesBou/mlpxai/blob/main/src/examples/notebooks/TabularRegression.ipynb))
+- Image classification example ([notebook](https://github.com/CarlesBou/mlpxai/blob/main/src/examples/notebooks/MNISTClassification.ipynb))
 
 
 ## Instalation
