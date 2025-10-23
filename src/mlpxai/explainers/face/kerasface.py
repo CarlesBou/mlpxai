@@ -115,7 +115,11 @@ def get_I_linear(x, w, bias=None):
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
     w_T_ext = get_transposed_ext(w, bias)
     
-    H = w_T_ext @ x_T_ext
+    # Compute preactivation value (before activation function is applied)
+    Z = w_T_ext @ x_T_ext
+    
+    # Compute postactivation value (before activation function is applied)
+    H = Z # linear activation
     
     return np.eye(w_T_ext.shape[0]), np.vstack(([1], H))
 
@@ -129,22 +133,26 @@ def get_I_relu(x, w, bias=None, alpha=0.3):
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
     w_T_ext = get_transposed_ext(w, bias)[1:]
     
-    H = w_T_ext @ x_T_ext
+    # Compute preactivation value (before activation function is applied)
+    Z = w_T_ext @ x_T_ext
     
-    mul_pos = H > 0
+    mul_pos = Z > 0
     mul_pos = mul_pos * 1
     
     mul = mul_pos
     
     if alpha > 0:
-        mul_neg = H <= 0
+        mul_neg = Z <= 0
         mul_neg = mul_neg * alpha  
         mul = mul_pos + mul_neg 
           
     I = np.append([1], mul.flatten())
     I = np.diag(I)
     
-    return I, I
+    # Compute postactivation value (before activation function is applied)
+    H = Z * mul
+    
+    return I, H
         
 
 '''
@@ -155,18 +163,22 @@ def get_I_hard_sigmoid(x, w, bias=None):
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
     w_T_ext = get_transposed_ext(w, bias)[1:]
   
-    H = w_T_ext @ x_T_ext
+    # Compute preactivation value (before activation function is applied)
+    Z = w_T_ext @ x_T_ext
     
-    mul_sup = H > 1
-    mul_else = (H > 0) & (H <= 1)
+    mul_sup = Z > 1
+    mul_else = (Z > 0) & (Z <= 1)
     mul_else = mul_else * 1
     
-    mul_sup = np.divide(1, H, where=mul_sup, out=np.zeros(H.shape))
+    mul_sup = np.divide(1, Z, where=mul_sup, out=np.zeros(Z.shape))
     
     mul = mul_else + mul_sup
         
     I = np.append([1], mul.flatten())
     I = np.diag(I)
+    
+    # Compute postactivation value (before activation function is applied)
+    H = Z * mul
     
     return I, np.vstack(([1], H))
 
@@ -191,22 +203,25 @@ def get_I_hard_tanh(x, w, bias=None):
     x_T_ext = np.hstack((1, x)).reshape(-1,1)
     w_T_ext = get_transposed_ext(w, bias)[1:]
     
-    H = w_T_ext @ x_T_ext
+    # Compute preactivation value (before activation function is applied)
+    Z = w_T_ext @ x_T_ext
     
-    mul_plus_one = H > 1
-    mul_less_one = H < -1
-    mul_else = (H >= -1) & (H <= 1)
+    mul_plus_one = Z > 1
+    mul_less_one = Z < -1
+    mul_else = (Z >= -1) & (Z <= 1)
     mul_else = mul_else * 1
     
-    mul_sup = np.divide(1, H, where=mul_plus_one, out=np.zeros(H.shape))
+    mul_sup = np.divide(1, Z, where=mul_plus_one, out=np.zeros(Z.shape))
     
-    mul_inf = np.divide(-1, H, where=mul_less_one, out=np.zeros(H.shape))
+    mul_inf = np.divide(-1, Z, where=mul_less_one, out=np.zeros(Z.shape))
     
     mul = mul_inf + mul_else + mul_sup
     
     I = np.append([1], mul.flatten())
     I = np.diag(I)
     
+    # Compute postactivation value (before activation function is applied)
+    H = Z * mul
 
     return I, np.vstack(([1], H))
 
