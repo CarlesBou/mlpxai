@@ -32,6 +32,8 @@ import numpy as np
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# tf.config.set_visible_devices([], 'GPU')
+
 # tf.keras.mixed_precision.set_global_policy('float64')
 
 '''
